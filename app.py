@@ -15,8 +15,8 @@ ESTIMATE_FILE = "estimates.json"
 st.sidebar.title("📁 Navigation")
 page = st.sidebar.radio("Go to", ["Inputs", "View Reports"])
 
-# --- Upload Page ---
-elif page == "Upload Report":
+# --- Input Page ---
+elif page == "Inputs":
     st.title("🔐 Secure Upload Area")
 
     # Simple password input
