@@ -5,26 +5,20 @@ import os
 import json
 import base64
 
-# Set upload folder to Render's persistent disk mount path
 UPLOAD_FOLDER = "/mnt/data/uploaded_reports"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 REPORT_LOG = "/mnt/data/report_log.csv"
 ESTIMATE_FILE = "/mnt/data/estimates.json"
 
-# Sidebar navigation with View Reports first
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["View Reports", "Inputs"], index=0)
 
-# ============================
-# VIEW REPORTS PAGE
-# ============================
 if page == "View Reports":
     st.title("Drilling Report Log & Cost Tracking")
 
     if os.path.exists(REPORT_LOG):
         df = pd.read_csv(REPORT_LOG)
-
         required_cols = {"Day #", "Daily Cost", "Phase", "Filename", "Date"}
         if required_cols.issubset(df.columns):
             df["Daily Cost"] = pd.to_numeric(df["Daily Cost"], errors="coerce")
@@ -39,12 +33,10 @@ if page == "View Reports":
             if os.path.exists(ESTIMATE_FILE):
                 with open(ESTIMATE_FILE, "r") as f:
                     estimates = json.load(f)
-
                 drilling_afe = estimates.get("Drilling AFE", 0)
                 completion_afe = estimates.get("Completion AFE", 0)
                 drilling_actual = df[df["Phase"] == "Drilling"]["Daily Cost"].sum()
                 completion_actual = df[df["Phase"] == "Completion"]["Daily Cost"].sum()
-
                 col1, col2 = st.columns(2)
                 with col1:
                     st.markdown("### Drilling Cost Summary")
@@ -60,7 +52,6 @@ if page == "View Reports":
             st.subheader("View Uploaded PDF")
             if "Filename" in df.columns and not df["Filename"].isna().all():
                 selected_file = st.selectbox("Select a report to view:", df["Filename"].unique())
-
                 if selected_file:
                     pdf_path = os.path.join(UPLOAD_FOLDER, selected_file)
                     if os.path.exists(pdf_path):
@@ -73,12 +64,8 @@ if page == "View Reports":
     else:
         st.warning("No reports uploaded yet.")
 
-# ============================
-# INPUTS PAGE
-# ============================
 elif page == "Inputs":
     st.title("Secure Input Portal")
-
     password = st.text_input("Enter password to continue", type="password")
     if password != "oilmoney":
         st.warning("Incorrect password.")
@@ -122,7 +109,6 @@ elif page == "Inputs":
 
     elif mode == "Add New Report":
         st.subheader("Upload Daily Drilling Report")
-
         report_date = st.date_input("Report Date", value=date.today())
         day_number = st.number_input("Drilling Day #", min_value=1)
         phase = st.selectbox("Phase", ["Drilling", "Completion"])
@@ -136,7 +122,6 @@ elif page == "Inputs":
                 filepath = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
                 with open(filepath, "wb") as f:
                     f.write(uploaded_file.getbuffer())
-
                 new_data = {
                     "Date": report_date.strftime("%Y-%m-%d"),
                     "Day #": int(day_number),
@@ -146,30 +131,25 @@ elif page == "Inputs":
                     "Notes": notes,
                     "Filename": uploaded_file.name,
                 }
-
                 if os.path.exists(REPORT_LOG):
                     df = pd.read_csv(REPORT_LOG)
                     df = pd.concat([df, pd.DataFrame([new_data])], ignore_index=True)
                 else:
                     df = pd.DataFrame([new_data])
-
                 df.to_csv(REPORT_LOG, index=False)
                 st.success("Report uploaded and saved.")
             else:
                 st.warning("Please upload a PDF file.")
 
     st.subheader("Enter Well Cost Estimates")
-
     if os.path.exists(ESTIMATE_FILE):
         with open(ESTIMATE_FILE, "r") as f:
             estimates = json.load(f)
     else:
         estimates = {"Drilling AFE": 0, "Completion AFE": 0, "Estimated Days": 0}
-
     drilling_afe = st.number_input("Drilling AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Drilling AFE", 0)))
     completion_afe = st.number_input("Completion AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Completion AFE", 0)))
     estimated_days = st.number_input("Estimated Days (Total)", min_value=0, value=int(estimates.get("Estimated Days", 0)))
-
     if st.button("Save Estimates"):
         with open(ESTIMATE_FILE, "w") as f:
             json.dump({
@@ -180,26 +160,25 @@ elif page == "Inputs":
         st.success("Estimates saved.")
 
     st.subheader("Delete a Specific Report Entry")
-
     if os.path.exists(REPORT_LOG):
         df = pd.read_csv(REPORT_LOG)
         df_display = df.copy()
         if not df_display.empty:
             df_display["Entry"] = df["Day #"].astype(str) + " | " + df["Date"].astype(str) + " | " + df["Filename"]
             selected_entry = st.selectbox("Select a row to delete:", df_display["Entry"].tolist(), key="delete")
-
             if st.button("Delete Selected Entry"):
                 selected_row = df_display[df_display["Entry"] == selected_entry]
-
-             if not selected_row.empty:
-    filename_to_delete = selected_row["Filename"].values[0]
-    df = df[df_display["Entry"] != selected_entry]
-    df.to_csv(REPORT_LOG, index=False)
-
-    file_path = os.path.join(UPLOAD_FOLDER, filename_to_delete)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
-    st.success(f"Deleted entry and file: {filename_to_delete}. Please refresh.")
-else:
-    st.error("Could not locate that row.")
+                if not selected_row.empty:
+                    filename_to_delete = selected_row["Filename"].values[0]
+                    df = df[df_display["Entry"] != selected_entry]
+                    df.to_csv(REPORT_LOG, index=False)
+                    file_path = os.path.join(UPLOAD_FOLDER, filename_to_delete)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    st.success(f"Deleted entry and file: {filename_to_delete}. Please refresh.")
+                else:
+                    st.error("Could not locate that row.")
+        else:
+            st.info("No entries to delete.")
+    else:
+        st.info("No reports uploaded yet.")
