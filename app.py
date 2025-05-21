@@ -191,4 +191,15 @@ elif page == "Inputs":
             if st.button("Delete Selected Entry"):
                 selected_row = df_display[df_display["Entry"] == selected_entry]
 
-                if not selected_row.empty:
+             if not selected_row.empty:
+    filename_to_delete = selected_row["Filename"].values[0]
+    df = df[df_display["Entry"] != selected_entry]
+    df.to_csv(REPORT_LOG, index=False)
+
+    file_path = os.path.join(UPLOAD_FOLDER, filename_to_delete)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    st.success(f"Deleted entry and file: {filename_to_delete}. Please refresh.")
+else:
+    st.error("Could not locate that row.")
