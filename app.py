@@ -5,7 +5,7 @@ import os
 import json
 import base64
 
-UPLOAD_FOLDER = "uploaded_reports"
+UPLOAD_FOLDER = "/mnt/data/uploaded_reports"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 REPORT_LOG = "report_log.csv"
@@ -44,6 +44,16 @@ if page == "Estimates":
 
 # --- Upload Page ---
 elif page == "Upload Report":
+    st.title("🔐 Secure Upload Area")
+
+    # Simple password input
+    password = st.text_input("Enter password to upload reports", type="password")
+
+    if password != "oilmoney":
+        st.warning("You must enter the correct password to access this page.")
+        st.stop()
+
+    # Upload form
     st.title("🛢️ Upload Daily Drilling Report")
 
     st.subheader("📋 Enter Metadata")
@@ -81,7 +91,7 @@ elif page == "Upload Report":
             st.success("Report uploaded and saved.")
         else:
             st.warning("Please upload a PDF file.")
-
+            
 # --- View Reports Page ---
 elif page == "View Reports":
     st.title("Dawes #1 Drilling Report Log & Cost Tracking")
