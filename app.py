@@ -8,8 +8,8 @@ import base64
 UPLOAD_FOLDER = "/mnt/data/uploaded_reports"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-REPORT_LOG = "/mnt/data/report_log.csv"
-ESTIMATE_FILE = "/mnt/data/estimates.json"
+ESTIMATE_FILE = "/mnt/data/uploaded_reports/estimates.json"
+REPORT_LOG = "/mnt/data/uploaded_reports/report_log.csv"
 
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["View Reports", "Inputs"], index=0)
