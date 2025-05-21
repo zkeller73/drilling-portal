@@ -13,14 +13,14 @@ REPORT_LOG = "/mnt/data/report_log.csv"
 ESTIMATE_FILE = "/mnt/data/estimates.json"
 
 # Sidebar navigation with View Reports first
-st.sidebar.title("\ud83d\udcc1 Navigation")
+st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["View Reports", "Inputs"], index=0)
 
 # ============================
 # VIEW REPORTS PAGE
 # ============================
 if page == "View Reports":
-    st.title("\ud83d\udcca Drilling Report Log & Cost Tracking")
+    st.title("Drilling Report Log & Cost Tracking")
 
     if os.path.exists(REPORT_LOG):
         df = pd.read_csv(REPORT_LOG)
@@ -32,7 +32,7 @@ if page == "View Reports":
             df = df.dropna(subset=["Day #", "Daily Cost"])
             st.dataframe(df)
 
-            st.subheader("\ud83d\udcc8 Daily Cost vs Drilling Day")
+            st.subheader("Daily Cost vs Drilling Day")
             if not df.empty:
                 st.line_chart(df[["Day #", "Daily Cost"]].set_index("Day #"))
 
@@ -47,17 +47,17 @@ if page == "View Reports":
 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.markdown("### \ud83d\udd25 Drilling Cost Summary")
+                    st.markdown("### Drilling Cost Summary")
                     st.markdown(f"**AFE:** ${drilling_afe:,.0f}")
                     st.markdown(f"**Actual:** ${drilling_actual:,.0f}")
                     st.markdown(f"**Variance:** ${drilling_actual - drilling_afe:,.0f}")
                 with col2:
-                    st.markdown("### \ud83d\udd27 Completion Cost Summary")
+                    st.markdown("### Completion Cost Summary")
                     st.markdown(f"**AFE:** ${completion_afe:,.0f}")
                     st.markdown(f"**Actual:** ${completion_actual:,.0f}")
                     st.markdown(f"**Variance:** ${completion_actual - completion_afe:,.0f}")
 
-            st.subheader("\ud83d\udcc4 View Uploaded PDF")
+            st.subheader("View Uploaded PDF")
             if "Filename" in df.columns and not df["Filename"].isna().all():
                 selected_file = st.selectbox("Select a report to view:", df["Filename"].unique())
 
@@ -77,7 +77,7 @@ if page == "View Reports":
 # INPUTS PAGE
 # ============================
 elif page == "Inputs":
-    st.title("\ud83d\udd10 Secure Input Portal")
+    st.title("Secure Input Portal")
 
     password = st.text_input("Enter password to continue", type="password")
     if password != "oilmoney":
@@ -121,7 +121,7 @@ elif page == "Inputs":
             st.success("Report updated successfully.")
 
     elif mode == "Add New Report":
-        st.subheader("\ud83d\udd25 Upload Daily Drilling Report")
+        st.subheader("Upload Daily Drilling Report")
 
         report_date = st.date_input("Report Date", value=date.today())
         day_number = st.number_input("Drilling Day #", min_value=1)
@@ -131,7 +131,7 @@ elif page == "Inputs":
         notes = st.text_area("Notes")
         uploaded_file = st.file_uploader("Upload PDF", type="pdf")
 
-        if st.button("\ud83d\ude80 Submit Report"):
+        if st.button("Submit Report"):
             if uploaded_file:
                 filepath = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
                 with open(filepath, "wb") as f:
@@ -158,7 +158,7 @@ elif page == "Inputs":
             else:
                 st.warning("Please upload a PDF file.")
 
-    st.subheader("\ud83e\uddf2 Enter Well Cost Estimates")
+    st.subheader("Enter Well Cost Estimates")
 
     if os.path.exists(ESTIMATE_FILE):
         with open(ESTIMATE_FILE, "r") as f:
@@ -166,11 +166,11 @@ elif page == "Inputs":
     else:
         estimates = {"Drilling AFE": 0, "Completion AFE": 0, "Estimated Days": 0}
 
-    drilling_afe = st.number_input("\ud83d\udd25 Drilling AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Drilling AFE", 0)))
-    completion_afe = st.number_input("\ud83d\udd27 Completion AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Completion AFE", 0)))
+    drilling_afe = st.number_input("Drilling AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Drilling AFE", 0)))
+    completion_afe = st.number_input("Completion AFE Total Cost ($)", min_value=0.0, value=float(estimates.get("Completion AFE", 0)))
     estimated_days = st.number_input("Estimated Days (Total)", min_value=0, value=int(estimates.get("Estimated Days", 0)))
 
-    if st.button("\ud83d\udcc2 Save Estimates"):
+    if st.button("Save Estimates"):
         with open(ESTIMATE_FILE, "w") as f:
             json.dump({
                 "Drilling AFE": drilling_afe,
@@ -179,7 +179,7 @@ elif page == "Inputs":
             }, f)
         st.success("Estimates saved.")
 
-    st.subheader("\ud83d\udeae Delete a Specific Report Entry")
+    st.subheader("Delete a Specific Report Entry")
 
     if os.path.exists(REPORT_LOG):
         df = pd.read_csv(REPORT_LOG)
@@ -192,18 +192,3 @@ elif page == "Inputs":
                 selected_row = df_display[df_display["Entry"] == selected_entry]
 
                 if not selected_row.empty:
-                    filename_to_delete = selected_row["Filename"].values[0]
-                    df = df[df_display["Entry"] != selected_entry]
-                    df.to_csv(REPORT_LOG, index=False)
-
-                    file_path = os.path.join(UPLOAD_FOLDER, filename_to_delete)
-                    if os.path.exists(file_path):
-                        os.remove(file_path)
-
-                    st.success(f"Deleted entry and file: {filename_to_delete}. Please refresh.")
-                else:
-                    st.error("Could not locate that row.")
-        else:
-            st.info("No entries to delete.")
-    else:
-        st.info("No reports uploaded yet.")
