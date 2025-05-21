@@ -15,6 +15,10 @@ ESTIMATE_FILE = "estimates.json"
 st.sidebar.title("📁 Navigation")
 page = st.sidebar.radio("Go to", ["Inputs", "View Reports"])
 
+# === START OF YOUR FIRST CONDITIONAL BLOCK ===
+if page == "Inputs":
+    st.title("🔐 Secure Input Portal")
+
 # --- Input Page ---
 elif page == "Inputs":
     st.title("🔐 Secure Upload Area")
